@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-campus-paper text-campus-ink font-sans antialiased;
+}
+
+.dark body {
+  @apply bg-campus-ink text-campus-paper;
+}
+
+/* Reusable design-system classes, styled after the reference: elegant serif
+   headlines, pill buttons, soft bordered inputs with icon prefixes, and
+   clean rounded cards with a quiet shadow. */
+
+@layer components {
+  .h-display {
+    @apply font-display font-medium tracking-tight;
+  }
+
+  .btn-pill {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold
+      transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn-pill bg-campus-ink text-white hover:bg-campus-blue-700 shadow-sm hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply btn-pill bg-white text-campus-ink border border-campus-ink/10 hover:border-campus-ink/30;
+  }
+
+  .btn-accent {
+    @apply btn-pill bg-campus-orange text-white hover:bg-campus-orange-600 shadow-sm hover:shadow-md;
+  }
+
+  .input-field {
+    @apply w-full rounded-2xl border border-campus-ink/10 bg-white px-4 py-3 text-sm text-campus-ink
+      placeholder:text-campus-ink/40 focus:outline-none focus:ring-2 focus:ring-campus-blue-400/40
+      focus:border-campus-blue-400 transition-all;
+  }
+
+  .input-with-icon {
+    @apply flex items-center gap-3 rounded-2xl border border-campus-ink/10 bg-white px-4 py-3
+      focus-within:ring-2 focus-within:ring-campus-blue-400/40 focus-within:border-campus-blue-400 transition-all;
+  }
+
+  .card {
+    @apply rounded-2xl bg-white border border-campus-ink/5 shadow-card hover:shadow-cardHover transition-shadow duration-200;
+  }
+
+  .badge-icon {
+    @apply flex h-11 w-11 items-center justify-center rounded-xl text-lg;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-campus-emerald-500;
+  }
+
+  .pill-tag {
+    @apply inline-flex items-center rounded-full border border-campus-ink/10 bg-white px-3 py-1 text-xs font-medium text-campus-ink/70;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(18, 23, 43, 0.15);
+  border-radius: 999px;
+}
