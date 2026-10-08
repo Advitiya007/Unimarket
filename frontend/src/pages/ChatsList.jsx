@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import { EmptyState } from '../components/Loaders';
 import { timeAgo } from '../utils/constants';
-import api from '../services/api';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 export default function ChatsList() {
@@ -12,7 +12,7 @@ export default function ChatsList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/chats').then(({ data }) => setChats(data)).finally(() => setLoading(false));
+    axios.get(`${import.meta.env.REACT_APP_BASE_URL}/chats`, { withCredentials: true }).then(({ data }) => setChats(data)).finally(() => setLoading(false));
   }, []);
 
   return (
@@ -44,7 +44,7 @@ export default function ChatsList() {
                 <Link key={chat._id} to={`/chats/${chat._id}`} className="card flex items-center gap-4 p-4">
                   <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-campus-blue-50">
                     {chat.listing?.images?.[0] ? (
-                      <img src={chat.listing.images[0]} alt="" className="h-full w-full object-cover" />
+                      <img src={new URL(chat.listing.images[0], import.meta.env.REACT_APP_BASE_URL).href} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full items-center justify-center text-xl">🛍️</div>
                     )}

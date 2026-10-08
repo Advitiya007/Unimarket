@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { FiSearch, FiBell, FiMessageCircle, FiPlus, FiMenu, FiX } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import axios from 'axios';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -16,7 +16,7 @@ export default function Navbar() {
 
   useEffect(() => {
     if (!user) return;
-    api.get('/users/notifications').then(({ data }) => setNotifications(data)).catch(() => {});
+    axios.get(`${import.meta.env.REACT_APP_BASE_URL}/users/notifications`, { withCredentials: true }).then(({ data }) => setNotifications(data)).catch(() => {});
   }, [user]);
 
   useEffect(() => {
@@ -32,6 +32,45 @@ export default function Navbar() {
     navigate(`/?search=${encodeURIComponent(search)}`);
   };
 
+  const markNotificationSeen = async (notification) => {
+    setNotifOpen(false);
+
+    if (notification.read) return;
+
+    setNotifications((current) =>
+      current.map((item) => item._id === notification._id ? { ...item, read: true } : item)
+    );
+
+    try {
+      await axios.put(
+        `${import.meta.env.REACT_APP_BASE_URL}/users/notifications/${notification._id}/read`,
+        {},
+        { withCredentials: true }
+      );
+    } catch {
+      setNotifications((current) =>
+        current.map((item) => item._id === notification._id ? notification : item)
+      );
+    }
+  };
+
+  const deleteNotification = async (notification) => {
+    setNotifications((current) => current.filter((item) => item._id !== notification._id));
+
+    try {
+      await axios.delete(
+        `${import.meta.env.REACT_APP_BASE_URL}/users/notifications/${notification._id}`,
+        { withCredentials: true }
+      );
+    } catch {
+      setNotifications((current) =>
+        current.some((item) => item._id === notification._id)
+          ? current
+          : [notification, ...current]
+      );
+    }
+  };
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
@@ -43,7 +82,7 @@ export default function Navbar() {
 
         <form onSubmit={submitSearch} className="hidden flex-1 md:flex">
           <div className="input-with-icon w-full max-w-md">
-            <FiSearch className="text-campus-ink/40" />
+            <FiSearch className="text-red-500" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -84,16 +123,26 @@ export default function Navbar() {
                         <p className="px-3 py-6 text-center text-sm text-campus-ink/40">Nothing yet</p>
                       )}
                       {notifications.map((n) => (
-                        <Link
-                          key={n._id}
-                          to={n.link || '#'}
-                          onClick={() => setNotifOpen(false)}
-                          className={`block rounded-xl px-3 py-2 text-sm hover:bg-campus-paper ${
-                            !n.read ? 'bg-campus-blue-50/60 font-medium' : ''
-                          }`}
-                        >
-                          {n.message}
-                        </Link>
+                        <div key={n._id} className="flex items-start gap-1 rounded-xl hover:bg-campus-paper">
+                          <Link
+                            to={n.link || '#'}
+                            onClick={() => markNotificationSeen(n)}
+                            className={`min-w-0 flex-1 rounded-xl px-3 py-2 text-sm ${
+                              !n.read ? 'bg-campus-blue-50/60 font-medium' : ''
+                            }`}
+                          >
+                            {n.message}
+                          </Link>
+                          <button
+                            type="button"
+                            aria-label="Delete notification"
+                            title="Delete notification"
+                            onClick={() => deleteNotification(n)}
+                            className="m-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-campus-ink/40 hover:bg-campus-ink/10 hover:text-campus-ink"
+                          >
+                            <FiX size={14} />
+                          </button>
+                        </div>
                       ))}
                     </div>
                   </div>

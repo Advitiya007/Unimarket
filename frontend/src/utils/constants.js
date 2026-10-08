@@ -1,14 +1,25 @@
+import {
+  FiActivity,
+  FiBookOpen,
+  FiEdit3,
+  FiGrid,
+  FiHome,
+  FiMonitor,
+  FiSearch,
+  FiShoppingBag,
+  FiTool,
+} from 'react-icons/fi';
+
 export const CATEGORIES = [
-  { name: 'Books', icon: '📚', bg: 'bg-campus-blue-50', color: 'text-campus-blue-500' },
-  { name: 'Electronics', icon: '💻', bg: 'bg-campus-emerald-50', color: 'text-campus-emerald-500' },
-  { name: 'Cycles', icon: '🚲', bg: 'bg-campus-orange-50', color: 'text-campus-orange-500' },
-  { name: 'Furniture', icon: '🪑', bg: 'bg-campus-blue-50', color: 'text-campus-blue-500' },
-  { name: 'Hostel Essentials', icon: '🧺', bg: 'bg-campus-emerald-50', color: 'text-campus-emerald-500' },
-  { name: 'Lab Equipment', icon: '🧪', bg: 'bg-campus-orange-50', color: 'text-campus-orange-500' },
-  { name: 'Sports', icon: '🏸', bg: 'bg-campus-blue-50', color: 'text-campus-blue-500' },
-  { name: 'Stationery', icon: '✏️', bg: 'bg-campus-emerald-50', color: 'text-campus-emerald-500' },
-  { name: 'Clothing', icon: '👕', bg: 'bg-campus-orange-50', color: 'text-campus-orange-500' },
-  { name: 'Lost & Found', icon: '🔍', bg: 'bg-campus-blue-50', color: 'text-campus-blue-500' },
+  { name: 'Books', icon: FiBookOpen, bg: 'bg-campus-blue-50', color: 'text-campus-blue-500' },
+  { name: 'Electronics', icon: FiMonitor, bg: 'bg-campus-emerald-50', color: 'text-campus-emerald-500' },
+  { name: 'Hostel Essentials', icon: FiHome, bg: 'bg-campus-orange-50', color: 'text-campus-orange-500' },
+  { name: 'Fashion & Accessories', icon: FiShoppingBag, bg: 'bg-campus-blue-50', color: 'text-campus-blue-500' },
+  { name: 'Lab Equipment', icon: FiTool, bg: 'bg-campus-emerald-50', color: 'text-campus-emerald-500' },
+  { name: 'Sports', icon: FiActivity, bg: 'bg-campus-orange-50', color: 'text-campus-orange-500' },
+  { name: 'Stationery', icon: FiEdit3, bg: 'bg-campus-blue-50', color: 'text-campus-blue-500' },
+  { name: 'Lost & Found', icon: FiSearch, bg: 'bg-campus-emerald-50', color: 'text-campus-emerald-500' },
+  { name: 'Miscellaneous', icon: FiGrid, bg: 'bg-campus-orange-50', color: 'text-campus-orange-500' },
 ];
 
 export const CONDITIONS = ['New', 'Like New', 'Good', 'Fair', 'Used'];

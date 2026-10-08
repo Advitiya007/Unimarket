@@ -1,66 +1,94 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from '../services/api';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext(null);
+let authRestorePromise;
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem('unimarket_user');
-    return stored ? JSON.parse(stored) : null;
-  });
-  const [token, setToken] = useState(() => localStorage.getItem('unimarket_token'));
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Restore the authenticated user when the app starts.
   useEffect(() => {
-    const bootstrap = async () => {
-      if (token) {
-        try {
-          const { data } = await api.get('/auth/me');
-          setUser(data);
-          localStorage.setItem('unimarket_user', JSON.stringify(data));
-        } catch {
-          setUser(null);
-          setToken(null);
-          localStorage.removeItem('unimarket_token');
-          localStorage.removeItem('unimarket_user');
-        }
+    let isMounted = true;
+
+    if (!authRestorePromise) {
+      authRestorePromise = axios
+        .get(`${import.meta.env.REACT_APP_BASE_URL}/auth/me`, { withCredentials: true })
+        .then(({ data }) => data)
+        .catch(() => null);
+    }
+
+    authRestorePromise.then((restoredUser) => {
+      if (isMounted) {
+        setUser(restoredUser);
+        setLoading(false);
       }
-      setLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
     };
-    bootstrap();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = useCallback(async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password });
+    const { data } = await axios.post(`${import.meta.env.REACT_APP_BASE_URL}/auth/login`, {
+      email,
+      password,
+    }, { withCredentials: true });
+
     setUser(data.user);
-    setToken(data.token);
-    localStorage.setItem('unimarket_token', data.token);
-    localStorage.setItem('unimarket_user', JSON.stringify(data.user));
+
     return data.user;
   }, []);
 
   const register = useCallback(async (payload) => {
-    const { data } = await api.post('/auth/register', payload);
+    const { data } = await axios.post(`${import.meta.env.REACT_APP_BASE_URL}/auth/register`, payload, { withCredentials: true });
+
     setUser(data.user);
-    setToken(data.token);
-    localStorage.setItem('unimarket_token', data.token);
-    localStorage.setItem('unimarket_user', JSON.stringify(data.user));
+
     return data.user;
   }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('unimarket_token');
-    localStorage.removeItem('unimarket_user');
+  const logout = useCallback(async () => {
+    try {
+      await axios.post(`${import.meta.env.REACT_APP_BASE_URL}/auth/logout`, {}, { withCredentials: true });
+    } finally {
+      setUser(null);
+    }
   }, []);
 
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      login,
+      register,
+      logout,
+    }),
+    [user, loading, login, register, logout]
+  );
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, setUser }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+
+  return context;
+}

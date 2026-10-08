@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { FiTrash2, FiSlash, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import MainLayout from '../layouts/MainLayout';
-import api from '../services/api';
+import axios from 'axios';
 
 const TABS = ['Users', 'Listings', 'Transactions'];
 
@@ -16,9 +16,9 @@ export default function Admin() {
   const load = async () => {
     setLoading(true);
     const [u, l, t] = await Promise.all([
-      api.get('/admin/users'),
-      api.get('/admin/listings'),
-      api.get('/admin/transactions'),
+      axios.get(`${import.meta.env.REACT_APP_BASE_URL}/admin/users`, { withCredentials: true }),
+      axios.get(`${import.meta.env.REACT_APP_BASE_URL}/admin/listings`, { withCredentials: true }),
+      axios.get(`${import.meta.env.REACT_APP_BASE_URL}/admin/transactions`, { withCredentials: true }),
     ]);
     setUsers(u.data);
     setListings(l.data);
@@ -29,14 +29,14 @@ export default function Admin() {
   useEffect(() => { load(); }, []);
 
   const toggleSuspend = async (u) => {
-    await api.put(`/admin/users/${u._id}/${u.isSuspended ? 'unsuspend' : 'suspend'}`);
+    await axios.put(`${import.meta.env.REACT_APP_BASE_URL}/admin/users/${u._id}/${u.isSuspended ? 'unsuspend' : 'suspend'}`, {}, { withCredentials: true });
     toast.success(u.isSuspended ? 'User unsuspended' : 'User suspended');
     load();
   };
 
   const removeListing = async (id) => {
     if (!confirm('Remove this listing?')) return;
-    await api.delete(`/admin/listings/${id}`);
+    await axios.delete(`${import.meta.env.REACT_APP_BASE_URL}/admin/listings/${id}`, { withCredentials: true });
     toast.success('Listing removed');
     load();
   };

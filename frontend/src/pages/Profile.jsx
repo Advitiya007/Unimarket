@@ -4,8 +4,9 @@ import { FiStar, FiMapPin, FiBook } from 'react-icons/fi';
 import MainLayout from '../layouts/MainLayout';
 import ListingCard from '../components/ListingCard';
 import { EmptyState } from '../components/Loaders';
-import api from '../services/api';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { FiShoppingBag } from 'react-icons/fi';
 
 export default function Profile() {
   const params = useParams();
@@ -20,8 +21,8 @@ export default function Profile() {
   useEffect(() => {
     if (!userId) return;
     Promise.all([
-      api.get(`/users/${userId}`),
-      api.get(`/ratings/user/${userId}`),
+      axios.get(`${import.meta.env.REACT_APP_BASE_URL}/users/${userId}`, { withCredentials: true }),
+      axios.get(`${import.meta.env.REACT_APP_BASE_URL}/ratings/user/${userId}`, { withCredentials: true }),
     ]).then(([profileRes, ratingsRes]) => {
       setData(profileRes.data);
       setRatings(ratingsRes.data);
@@ -65,8 +66,7 @@ export default function Profile() {
       <div className="mx-auto max-w-6xl px-5 py-14">
         <p className="eyebrow mb-3">Active listings</p>
         {activeListings.length === 0 ? (
-          <EmptyState icon="🛍️" title="No active listings" />
-        ) : (
+<EmptyState icon={<FiShoppingBag />} title="No active listings" />        ) : (
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {activeListings.map((l) => <ListingCard key={l._id} listing={l} />)}
           </div>
@@ -74,8 +74,7 @@ export default function Profile() {
 
         <p className="eyebrow mb-3 mt-12">Ratings received</p>
         {ratings.length === 0 ? (
-          <EmptyState icon="⭐" title="No ratings yet" />
-        ) : (
+<EmptyState icon={<FiStar />} title="No ratings yet" />        ) : (
           <div className="space-y-3">
             {ratings.map((r) => (
               <div key={r._id} className="card p-4">

@@ -4,7 +4,7 @@ import { FiUploadCloud, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import MainLayout from '../layouts/MainLayout';
 import { CATEGORIES, CONDITIONS, MEETUP_LOCATIONS } from '../utils/constants';
-import api from '../services/api';
+import axios from 'axios';
 
 export default function CreateListing() {
   const navigate = useNavigate();
@@ -45,8 +45,8 @@ export default function CreateListing() {
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       images.forEach((img) => fd.append('images', img.file));
 
-      const { data } = await api.post('/listings', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const { data } = await axios.post(`${import.meta.env.REACT_APP_BASE_URL}/listings`, fd, {
+        withCredentials: true,
       });
       toast.success('Listing published!');
       navigate(`/listings/${data._id}`);
@@ -124,10 +124,14 @@ export default function CreateListing() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-campus-ink/60">Category</label>
-              <select name="category" required value={form.category} onChange={handleChange} className="input-field">
-                <option value="">Select category</option>
-                {CATEGORIES.map((c) => <option key={c.name} value={c.name}>{c.name}</option>)}
-              </select>
+            <select value={form.category} onChange={handleChange}>
+  <option value="">Select Category</option>
+  {CATEGORIES.map((c) => (
+    <option key={c.name} value={c.name}>
+      {c.name}
+    </option>
+  ))}
+</select>
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-campus-ink/60">Condition</label>

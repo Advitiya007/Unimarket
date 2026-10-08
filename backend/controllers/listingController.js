@@ -34,7 +34,8 @@ export const createListing = async (req, res) => {
     });
 
     res.status(201).json(listing);
-  } catch (err) {
+  } 
+  catch (err) {
     res.status(500).json({ message: 'Failed to create listing', error: err.message });
   }
 };
@@ -73,6 +74,7 @@ export const getListings = async (req, res) => {
     if (sort === 'low-high') sortOption = { price: 1 };
     if (sort === 'high-low') sortOption = { price: -1 };
 
+    
     let listingsQuery = Listing.find(query)
       .populate('seller', 'name rating hostel profilePicture')
       .sort(sortOption)

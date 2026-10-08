@@ -6,7 +6,7 @@ import MainLayout from '../layouts/MainLayout';
 import ListingCard from '../components/ListingCard';
 import { EmptyState } from '../components/Loaders';
 import RatingModal from '../components/RatingModal';
-import api from '../services/api';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 const TABS = ['Selling', 'Buying', 'Analytics'];
@@ -22,8 +22,8 @@ export default function Dashboard() {
   const load = async () => {
     setLoading(true);
     const [listingsRes, txRes] = await Promise.all([
-      api.get('/listings/mine/all'),
-      api.get('/transactions/mine'),
+      axios.get(`${import.meta.env.REACT_APP_BASE_URL}/listings/mine/all`, { withCredentials: true }),
+      axios.get(`${import.meta.env.REACT_APP_BASE_URL}/transactions/mine`, { withCredentials: true }),
     ]);
     setMyListings(listingsRes.data);
     setTransactions(txRes.data);
@@ -34,14 +34,14 @@ export default function Dashboard() {
 
   const deleteListing = async (id) => {
     if (!confirm('Delete this listing?')) return;
-    await api.delete(`/listings/${id}`);
+    await axios.delete(`${import.meta.env.REACT_APP_BASE_URL}/listings/${id}`, { withCredentials: true });
     toast.success('Listing deleted');
     load();
   };
 
   const startTransaction = async (listingId) => {
     try {
-      await api.post('/transactions', { listingId });
+      await axios.post(`${import.meta.env.REACT_APP_BASE_URL}/transactions`, { listingId }, { withCredentials: true });
       toast.success('Transaction started — confirm delivery once you meet up.');
       load();
     } catch (err) {
@@ -51,7 +51,7 @@ export default function Dashboard() {
 
   const confirmTx = async (txId) => {
     try {
-      const { data } = await api.post(`/transactions/${txId}/confirm`);
+      const { data } = await axios.post(`${import.meta.env.REACT_APP_BASE_URL}/transactions/${txId}/confirm`, {}, { withCredentials: true });
       toast.success(data.completed ? 'Transaction complete! You can now rate.' : 'Confirmed — waiting on the other side.');
       load();
     } catch (err) {
@@ -127,7 +127,7 @@ export default function Dashboard() {
                   buyingTx.map((t) => (
                     <div key={t._id} className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
                       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-campus-blue-50">
-                        {t.listing?.images?.[0] && <img src={t.listing.images[0]} alt="" className="h-full w-full object-cover" />}
+                        {t.listing?.images?.[0] && <img src={new URL(t.listing.images[0], import.meta.env.REACT_APP_BASE_URL).href} alt="" className="h-full w-full object-cover" />}
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-campus-ink">{t.listing?.title}</p>
@@ -202,7 +202,7 @@ function TxRow({ tx, onConfirm, confirmedKey, label }) {
   return (
     <div className="card flex items-center gap-3 p-4">
       <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-campus-blue-50">
-        {tx.listing?.images?.[0] && <img src={tx.listing.images[0]} alt="" className="h-full w-full object-cover" />}
+        {tx.listing?.images?.[0] && <img src={new URL(tx.listing.images[0], import.meta.env.REACT_APP_BASE_URL).href} alt="" className="h-full w-full object-cover" />}
       </div>
       <div className="flex-1">
         <p className="text-sm font-semibold text-campus-ink">{tx.listing?.title}</p>

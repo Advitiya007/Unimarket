@@ -7,6 +7,7 @@ import {
   getWishlist,
   getNotifications,
   markNotificationRead,
+  deleteNotification,
 } from '../controllers/userController.js';
 
 const router = express.Router();
@@ -16,6 +17,7 @@ router.get('/wishlist', protect, getWishlist);
 router.post('/wishlist/:listingId', protect, toggleWishlist);
 router.get('/notifications', protect, getNotifications);
 router.put('/notifications/:id/read', protect, markNotificationRead);
+router.delete('/notifications/:id', protect, deleteNotification);
 router.get('/:id', getUserProfile);
 
 export default router;

@@ -4,8 +4,10 @@ import { FiMapPin, FiFlag, FiShare2, FiStar, FiCheck, FiX } from 'react-icons/fi
 import toast from 'react-hot-toast';
 import MainLayout from '../layouts/MainLayout';
 import { timeAgo } from '../utils/constants';
-import api from '../services/api';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+
+
 
 export default function ListingDetail() {
   const { id } = useParams();
@@ -18,7 +20,7 @@ export default function ListingDetail() {
 
   const fetchListing = async () => {
     try {
-      const { data } = await api.get(`/listings/${id}`);
+      const { data } = await axios.get(`${import.meta.env.REACT_APP_BASE_URL}/listings/${id}`, { withCredentials: true });
       setListing(data);
     } catch {
       toast.error('Listing not found');
@@ -59,7 +61,7 @@ export default function ListingDetail() {
   const expressInterest = async () => {
     setBusy(true);
     try {
-      await api.post(`/listings/${id}/interest`);
+      await axios.post(`${import.meta.env.REACT_APP_BASE_URL}/listings/${id}/interest`, {}, { withCredentials: true });
       toast.success('Interest sent to the seller!');
       fetchListing();
     } catch (err) {
@@ -72,7 +74,7 @@ export default function ListingDetail() {
   const respond = async (buyerId, decision) => {
     setBusy(true);
     try {
-      const { data } = await api.post(`/listings/${id}/respond`, { buyerId, decision });
+      const { data } = await axios.post(`${import.meta.env.REACT_APP_BASE_URL}/listings/${id}/respond`, { buyerId, decision }, { withCredentials: true });
       toast.success(decision === 'accepted' ? 'Buyer accepted — chat unlocked!' : 'Request declined');
       if (decision === 'accepted' && data.chat) {
         navigate(`/chats/${data.chat._id}`);
@@ -103,7 +105,7 @@ export default function ListingDetail() {
           <div>
             <div className="aspect-square overflow-hidden rounded-2xl bg-campus-blue-50">
               {listing.images?.length > 0 ? (
-                <img src={listing.images[activeImg]} alt={listing.title} className="h-full w-full object-cover" />
+                <img src={new URL(listing.images[activeImg], import.meta.env.REACT_APP_BASE_URL).href} alt={listing.title} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full items-center justify-center text-6xl">🛍️</div>
               )}
@@ -118,7 +120,7 @@ export default function ListingDetail() {
                       activeImg === i ? 'border-campus-blue-500' : 'border-transparent'
                     }`}
                   >
-                    <img src={img} alt="" className="h-full w-full object-cover" />
+                    <img src={new URL(img, import.meta.env.REACT_APP_BASE_URL).href} alt="" className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>

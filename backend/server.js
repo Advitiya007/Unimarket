@@ -17,6 +17,7 @@ import transactionRoutes from './routes/transactionRoutes.js';
 import ratingRoutes from './routes/ratingRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,6 +26,7 @@ connectDB();
 
 const app = express();
 const server = http.createServer(app);
+app.use(cookieParser());
 const io = new Server(server, {
   cors: { origin: process.env.CLIENT_URL || '*', credentials: true },
 });

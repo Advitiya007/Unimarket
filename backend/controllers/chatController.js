@@ -2,6 +2,7 @@ import Chat from '../models/Chat.js';
 
 // @desc   Get all chats for logged-in user
 // @route  GET /api/chats
+
 export const getMyChats = async (req, res) => {
   try {
     const chats = await Chat.find({ participants: req.user._id })
@@ -22,17 +23,27 @@ export const getChatById = async (req, res) => {
       .populate('participants', 'name profilePicture')
       .populate('listing', 'title images price status seller')
       .populate('messages.sender', 'name profilePicture');
-
+// const chat = await Chat.findById(req.params.id).populate([
+//   { path: 'participants', select: 'name profilePicture' },
+//   { path: 'listing', select: 'title images price status seller' },
+//   { path: 'messages.sender', select: 'name profilePicture' }
+// ]);
     if (!chat) return res.status(404).json({ message: 'Chat not found' });
 
     const isParticipant = chat.participants.some((p) => p._id.toString() === req.user._id.toString());
     if (!isParticipant) return res.status(403).json({ message: 'You are not part of this chat' });
+// chat.participants = [
+//   { _id: "123", name: "Rahul" },
+//   { _id: "456", name: "Aditya" }
+// ];
 
+// req.user._id = "456";
     res.json(chat);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch chat', error: err.message });
   }
 };
+
 
 // @desc   Send a message (REST fallback; primary path is socket.io)
 // @route  POST /api/chats/:id/messages

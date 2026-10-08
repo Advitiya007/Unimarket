@@ -4,6 +4,7 @@ import { FiUser, FiHash, FiMail, FiLock } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
+
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function Register() {
   });
   const [loading, setLoading] = useState(false);
 
+ 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
@@ -48,10 +50,11 @@ export default function Register() {
               <label className="mb-1.5 block text-xs font-medium text-campus-ink/60">Full Name</label>
               <div className="input-with-icon">
                 <FiUser className="text-campus-ink/40" />
-                <input name="name" required value={form.name} onChange={handleChange} placeholder="Jane Doe"
+                <input name="name" required value={form.name} onChange={handleChange} placeholder="abc123"
                   className="w-full bg-transparent text-sm outline-none placeholder:text-campus-ink/30" />
               </div>
             </div>
+
             <div>
               <label className="mb-1.5 block text-xs font-medium text-campus-ink/60">Roll Number</label>
               <div className="input-with-icon">
@@ -60,6 +63,7 @@ export default function Register() {
                   className="w-full bg-transparent text-sm outline-none placeholder:text-campus-ink/30" />
               </div>
             </div>
+            
             <div>
               <label className="mb-1.5 block text-xs font-medium text-campus-ink/60">Institutional Email</label>
               <div className="input-with-icon">

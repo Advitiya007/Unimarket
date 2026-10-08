@@ -8,8 +8,9 @@ export default function Footer() {
           <div>
             <span className="h-display text-2xl italic text-white">UniMarket</span>
             <p className="mt-3 max-w-xs text-sm text-campus-paper/50">
-              The trusted, verified marketplace built for NIT Jalandhar students. Buy, sell, and meet
-              safely on campus.
+              {/* The trusted, verified marketplace built for NIT Jalandhar students. Buy, sell, and meet
+              safely on campus. */}
+              A trusted marketplace for NIT Jalandhar students. Buy, sell, and connect with your campus community.
             </p>
           </div>
           <div>
@@ -37,6 +38,7 @@ export default function Footer() {
           © {new Date().getFullYear()} UniMarket — built for students, by students.
         </div>
       </div>
+      
     </footer>
   );
 }

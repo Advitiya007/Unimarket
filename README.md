@@ -32,29 +32,10 @@ rate each other after a completed trade.
 - Design system: serif display headlines (Fraunces) + Inter body text, pill buttons,
   icon-prefixed inputs, soft-shadow rounded cards — in the blue/emerald/orange campus palette
 
-## Not yet wired up (natural next steps)
-- Image compression/lazy-loading and infinite scroll (pagination API exists; UI currently
-  loads one page)
-- Toast-driven "listing liked" notifications, push notifications outside the app
-- Reporting a listing (button exists in the UI, backend endpoint not yet built)
-- Dark mode toggle (Tailwind `darkMode: 'class'` is configured, no toggle UI yet)
 
 ## Running it locally
 
-### Backend
-```bash
-cd backend
-cp .env.example .env   # set MONGO_URI and JWT_SECRET
-npm install
-npm run dev             # http://localhost:5000
-```
 
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev              # http://localhost:5173, proxies /api and /uploads to :5000
-```
 
 You'll need a running MongoDB instance (local `mongod` or a MongoDB Atlas connection string)
 for `MONGO_URI`.

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import StarRating from './StarRating';
-import api from '../services/api';
+import axios from 'axios';
 
 export default function RatingModal({ transaction, onClose, onSubmitted }) {
   const [stars, setStars] = useState(5);
@@ -11,7 +11,7 @@ export default function RatingModal({ transaction, onClose, onSubmitted }) {
   const submit = async () => {
     setSubmitting(true);
     try {
-      await api.post('/ratings', { transactionId: transaction._id, stars, review });
+      await axios.post(`${import.meta.env.REACT_APP_BASE_URL}/ratings`, { transactionId: transaction._id, stars, review }, { withCredentials: true });
       toast.success('Rating submitted — thank you!');
       onSubmitted();
     } catch (err) {

@@ -8,7 +8,11 @@ const socketHandler = (io) => {
   // Authenticate every socket connection using the same JWT used for REST
   io.use((socket, next) => {
     try {
-      const token = socket.handshake.auth?.token;
+      const token = socket.handshake.headers.cookie
+        ?.split(';')
+        .map((cookie) => cookie.trim())
+        .find((cookie) => cookie.startsWith('token='))
+        ?.slice('token='.length);
       if (!token) return next(new Error('Authentication required'));
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       socket.userId = decoded.id;
