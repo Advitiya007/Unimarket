@@ -44,7 +44,13 @@ export default function CreateListing() {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       images.forEach((img) => fd.append('images', img.file));
-
+console.log(
+  'FormData entries:',
+  [...fd.entries()].map(([key, value]) => ({
+    key,
+    value: value instanceof File ? value.name : value,
+  }))
+);
       const { data } = await axios.post(`${import.meta.env.REACT_APP_BASE_URL}/listings`, fd, {
         withCredentials: true,
       });
@@ -124,14 +130,31 @@ export default function CreateListing() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-campus-ink/60">Category</label>
-            <select value={form.category} onChange={handleChange}>
+            
+<select
+  name="category"
+  required
+  value={form.category}
+  onChange={handleChange}
+  className="input-field"
+>
   <option value="">Select Category</option>
+
   {CATEGORIES.map((c) => (
     <option key={c.name} value={c.name}>
       {c.name}
     </option>
   ))}
 </select>
+
+            {/* <select value={form.category} onChange={handleChange}>
+  <option value="">Select Category</option>
+  {CATEGORIES.map((c) => (
+    <option key={c.name} value={c.name}>
+      {c.name}
+    </option>
+  ))}
+</select> */}
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-campus-ink/60">Condition</label>
@@ -156,10 +179,23 @@ export default function CreateListing() {
 
           <div>
             <label className="mb-1.5 block text-xs font-medium text-campus-ink/60">Campus Meetup Location</label>
-            <select name="meetupLocation" required value={form.meetupLocation} onChange={handleChange} className="input-field">
+           <select
+  name="meetupLocation"
+  value={form.meetupLocation}
+  onChange={handleChange}
+  required
+  className="input-field"
+>
+  <option value="">Select location</option>
+  {MEETUP_LOCATIONS.map((l) => (
+    <option key={l} value={l}>{l}</option>
+  ))}
+</select>
+           
+            {/* <select name="meetupLocation" required value={form.meetupLocation} onChange={handleChange} className="input-field">
               <option value="">Select location</option>
               {MEETUP_LOCATIONS.map((l) => <option key={l} value={l}>{l}</option>)}
-            </select>
+            </select> */}
           </div>
 
           <div>

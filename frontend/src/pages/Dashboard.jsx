@@ -97,11 +97,22 @@ export default function Dashboard() {
             {tab === 'Selling' && (
               <div className="space-y-12">
                 <ListingGroup title="Reserved — action needed" items={reserved} deleteListing={deleteListing}
-                  extra={(l) => (
-                    <button onClick={() => startTransaction(l._id)} className="btn-accent mt-2 w-full text-xs py-2">
-                      Start Transaction
-                    </button>
-                  )} />
+               extra={(l) => {
+  const transactionStarted = transactions.some(
+    (t) => t.listing?._id === l._id
+  );
+
+  return (
+    <button
+      onClick={() => startTransaction(l._id)}
+      disabled={transactionStarted}
+      className="btn-accent mt-2 w-full text-xs py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {transactionStarted ? 'Transaction Started' : 'Start Transaction'}
+    </button>
+  );
+}}
+                   />
                 <ListingGroup title="Active Listings" items={active} deleteListing={deleteListing} />
                 <ListingGroup title="Sold" items={sold} deleteListing={deleteListing} />
                 <ListingGroup title="Expired (archive)" items={expired} deleteListing={deleteListing} />

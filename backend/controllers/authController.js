@@ -23,27 +23,59 @@ export const register = async (req, res) => {
     const { name, rollNumber, email, password, confirmPassword } = req.body;
 
     if (!name || !rollNumber || !email || !password || !confirmPassword) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({
+        message: 'All fields are required',
+      });
+    }
+console.log(`Registering user: ${name}, Roll Number: ${rollNumber}, Email: ${email}`);
+    const normalizedEmail = email.toLowerCase().trim();
+
+    if (!normalizedEmail.endsWith(INSTITUTIONAL_DOMAIN)) {
+      return res.status(400).json({
+        message: 'Only institutional emails are allowed',
+      });
     }
 
-    if (!email.toLowerCase().endsWith(INSTITUTIONAL_DOMAIN)) {
+    // Roll number must be exactly 8 digits
+    if (!/^\d{8}$/.test(rollNumber)) {
       return res.status(400).json({
-        message: `Only ${INSTITUTIONAL_DOMAIN} institutional emails are allowed`,
+        message: 'Incorrect roll number or email',
+      });
+    }
+
+    // Extract 2 digits before @
+
+    const emailYearMatch = normalizedEmail.match(/\.([0-9]{2})@/);
+
+    if (!emailYearMatch) {
+      return res.status(400).json({
+        message: 'Invalid institutional email format',
+      });
+    }
+
+    const emailYear = emailYearMatch[1];
+
+    // First 2 digits of roll number must match email year
+    if (rollNumber.substring(0, 2) !== emailYear) {
+      return res.status(400).json({
+        message: 'Incorrect roll number or email',
       });
     }
 
     if (password !== confirmPassword) {
-      return res.status(400).json({ message: 'Passwords do not match' });
+      return res.status(400).json({
+        message: 'Passwords do not match',
+      });
     }
 
     if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: 'Password must be at least 6 characters' });
+      return res.status(400).json({
+        message: 'Password must be at least 6 characters',
+      });
     }
 
     const existingEmail = await User.findOne({
-      email: email.toLowerCase(),
+      email: normalizedEmail,
     });
 
     if (existingEmail) {
@@ -52,7 +84,9 @@ export const register = async (req, res) => {
       });
     }
 
-    const existingRoll = await User.findOne({ rollNumber });
+    const existingRoll = await User.findOne({
+      rollNumber,
+    });
 
     if (existingRoll) {
       return res.status(409).json({
@@ -62,27 +96,18 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    console.log(
-      `Registering new user: ${name}, Roll: ${rollNumber}, Email: ${email.toLowerCase()}`
-    );
-
     const user = await User.create({
       name,
       rollNumber,
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       password: hashedPassword,
     });
 
-    // CHANGED: Generate the JWT and store it in an HttpOnly cookie
-    // instead of sending the token to the frontend.
     const token = generateToken(user._id);
 
-    // CHANGED: Browser stores the cookie automatically.
-    // Frontend JavaScript cannot read the JWT because of httpOnly.
     res.cookie('token', token, cookieOptions);
 
     res.status(201).json({
-      // CHANGED: token removed from response
       user: {
         _id: user._id,
         name: user.name,
@@ -94,9 +119,10 @@ export const register = async (req, res) => {
   } catch (err) {
     res.status(500).json({
       message: 'Registration failed',
-      // CHANGED: Don't expose internal error details in production.
       error:
-        process.env.NODE_ENV === 'production' ? undefined : err.message,
+        process.env.NODE_ENV === 'production'
+          ? undefined
+          : err.message,
     });
   }
 };
@@ -113,8 +139,10 @@ export const login = async (req, res) => {
       });
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     const user = await User.findOne({
-      email: email.toLowerCase(),
+      email: normalizedEmail,
     });
 
     if (!user) {
@@ -128,7 +156,7 @@ export const login = async (req, res) => {
         message: 'Your account has been suspended. Contact admin.',
       });
     }
-
+console.log
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -136,7 +164,6 @@ export const login = async (req, res) => {
         message: 'Invalid email or password',
       });
     }
-
     console.log(`User logged in: ${user.name}, Email: ${user.email}`);
 
     // CHANGED: Generate JWT and put it in HttpOnly cookie.

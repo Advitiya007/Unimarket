@@ -3,6 +3,8 @@ import Listing from '../models/Listing.js';
 import User from '../models/User.js';
 import { lockChatForListing } from './chatController.js';
 import createNotification from '../utils/createNotification.js';
+import cloudinary from '../config/cloudinary.js';
+
 
 // @desc   Seller initiates the transaction record once a buyer is selected (Reserved status)
 // @route  POST /api/transactions
@@ -53,11 +55,25 @@ export const confirmTransaction = async (req, res) => {
     if (transaction.sellerConfirmed && transaction.buyerConfirmed && !transaction.completed) {
       transaction.completed = true;
       transaction.completedAt = new Date();
-
+      
       const listing = await Listing.findById(transaction.listing._id);
       listing.status = 'Sold';
       await listing.save();
       await lockChatForListing(listing._id);
+
+
+const publicIds = listing.imagePublicIds || [];
+
+await Promise.allSettled(
+  publicIds.map((id) =>
+    cloudinary.uploader.destroy(id, { invalidate: true })
+  )
+);
+
+await Listing.findByIdAndDelete(listing._id);
+
+
+
 
       await User.findByIdAndUpdate(transaction.seller, { $inc: { totalTrades: 1 } });
       await User.findByIdAndUpdate(transaction.buyer, { $inc: { totalTrades: 1 } });

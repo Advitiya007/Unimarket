@@ -1,7 +1,9 @@
 import Listing from '../models/Listing.js';
 import Chat from '../models/Chat.js';
 import createNotification from '../utils/createNotification.js';
-
+import uploadToCloudinary from '../utils/uploadToCloudinary.js';
+import cloudinary from '../config/cloudinary.js';
+import deleteFromCloudinary from '../utils/deleteFromCloudinary.js';
 const EXPIRY_DAYS = 7;
 
 // @desc   Create a listing
@@ -13,25 +15,35 @@ export const createListing = async (req, res) => {
     if (!title || !description || !category || !price || !condition || !meetupLocation) {
       return res.status(400).json({ message: 'Missing required listing fields' });
     }
+    const uploadedImages = await Promise.all(
+  (req.files || []).map((file) =>
+    uploadToCloudinary(file.buffer)
+  )
+);
 
-    const images = (req.files || []).map((f) => `/uploads/${f.filename}`);
-
+const images = uploadedImages.map((image) => image.url);
+// const images = (req.files || []).map((f) => `/uploads/${f.filename}`);
+    // const images = (req.files || []).map((f) => `/uploads/${f.filename}`);
+const imagePublicIds = uploadedImages.map(
+  (image) => image.publicId
+);
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + EXPIRY_DAYS);
 
-    const listing = await Listing.create({
-      seller: req.user._id,
-      title,
-      description,
-      category,
-      price,
-      condition,
-      brand: brand || '',
-      images,
-      meetupLocation,
-      meetupNotes: meetupNotes || '',
-      expiresAt,
-    });
+const listing = await Listing.create({
+  seller: req.user._id,
+  title,
+  description,
+  category,
+  price,
+  condition,
+  brand: brand || '',
+  images,
+  imagePublicIds,
+  meetupLocation,
+  meetupNotes: meetupNotes || '',
+  expiresAt,
+});
 
     res.status(201).json(listing);
   } 
@@ -116,43 +128,234 @@ export const getListingById = async (req, res) => {
 
 // @desc   Update a listing (owner only)
 // @route  PUT /api/listings/:id
+// export const updateListing = async (req, res) => {
+//   try {
+//     const listing = await Listing.findById(req.params.id);
+//     if (!listing) return res.status(404).json({ message: 'Listing not found' });
+//     if (listing.seller.toString() !== req.user._id.toString()) {
+//       return res.status(403).json({ message: 'Only the listing owner can edit this listing' });
+//     }
+
+//     const editable = ['title', 'description', 'category', 'price', 'condition', 'brand', 'meetupLocation', 'meetupNotes'];
+//     editable.forEach((field) => {
+//       if (req.body[field] !== undefined) listing[field] = req.body[field];
+//     });
+// if (req.files && req.files.length > 0) {
+//   const uploadedImages = await Promise.all(
+//     req.files.map((file) =>
+//       uploadToCloudinary(file.buffer)
+//     )
+//   );
+
+//   const oldPublicIds = listing.imagePublicIds || [];
+
+//   listing.images = uploadedImages.map((image) => image.url);
+//   listing.imagePublicIds = uploadedImages.map(
+//     (image) => image.publicId
+//   );
+
+//   await listing.save();
+
+//   // Delete previous Cloudinary images after saving new ones
+//   await Promise.allSettled(
+//     oldPublicIds.map((id) => cloudinary.uploader.destroy(id))
+//   );
+
+//   return res.json(listing);
+// }
+//   if (req.files && req.files.length > 0) {
+//   const uploadedImages = await Promise.all(
+//     req.files.map((file) =>
+//       uploadToCloudinary(file.buffer)
+//     )
+//   );
+
+//   listing.images = uploadedImages.map((image) => image.url);
+// }
+//     await listing.save();
+//     res.json(listing);
+//   } catch (err) {
+//     res.status(500).json({ message: 'Failed to update listing', error: err.message });
+//   }
+// };
+
 export const updateListing = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
-    if (!listing) return res.status(404).json({ message: 'Listing not found' });
-    if (listing.seller.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Only the listing owner can edit this listing' });
+
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing not found' });
     }
 
-    const editable = ['title', 'description', 'category', 'price', 'condition', 'brand', 'meetupLocation', 'meetupNotes'];
+    if (listing.seller.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: 'Only the listing owner can edit this listing'
+      });
+    }
+
+    const editable = [
+      'title', 'description', 'category', 'price',
+      'condition', 'brand', 'meetupLocation', 'meetupNotes'
+    ];
+
     editable.forEach((field) => {
-      if (req.body[field] !== undefined) listing[field] = req.body[field];
+      if (req.body[field] !== undefined) {
+        listing[field] = req.body[field];
+      }
     });
 
     if (req.files && req.files.length > 0) {
-      listing.images = req.files.map((f) => `/uploads/${f.filename}`);
+      const uploadedImages = await Promise.all(
+        req.files.map((file) =>
+          uploadToCloudinary(file.buffer)
+        )
+      );
+
+      const oldPublicIds = listing.imagePublicIds || [];
+
+      listing.images = uploadedImages.map((image) => image.url);
+      listing.imagePublicIds = uploadedImages.map(
+        (image) => image.publicId
+      );
+
+      await listing.save();
+
+      await Promise.allSettled(
+        oldPublicIds.map((id) =>
+          cloudinary.uploader.destroy(id)
+        )
+      );
+
+      return res.json(listing);
     }
 
     await listing.save();
     res.json(listing);
+
   } catch (err) {
-    res.status(500).json({ message: 'Failed to update listing', error: err.message });
+    res.status(500).json({
+      message: 'Failed to update listing',
+      error: err.message
+    });
   }
 };
 
 // @desc   Delete a listing (owner only)
 // @route  DELETE /api/listings/:id
+// export const deleteListing = async (req, res) => {
+//   try {
+//     const listing = await Listing.findById(req.params.id);
+//     if (!listing) return res.status(404).json({ message: 'Listing not found' });
+//     if (listing.seller.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+//       return res.status(403).json({ message: 'Only the listing owner can delete this listing' });
+//     }
+//     await listing.deleteOne();
+//     res.json({ message: 'Listing deleted' });
+//   } catch (err) {
+//     res.status(500).json({ message: 'Failed to delete listing', error: err.message });
+//   }
+// };
+
+// export const deleteListing = async (req, res) => {
+//   try {
+//     const listing = await Listing.findById(req.params.id);
+
+//     if (!listing) {
+//       return res.status(404).json({
+//         message: 'Listing not found',
+//       });
+//     }
+
+//     if (
+//       listing.seller.toString() !== req.user._id.toString() &&
+//       !req.user.isAdmin
+//     ) {
+//       return res.status(403).json({
+//         message: 'Only the listing owner can delete this listing',
+//       });
+//     }
+
+//     const publicIds = listing.imagePublicIds || [];
+
+//     await listing.deleteOne();
+
+//     // Remove associated Cloudinary images
+//     const results = await Promise.allSettled(
+//       publicIds.map((id) => cloudinary.uploader.destroy(id))
+//     );
+
+//     results.forEach((result) => {
+//       if (result.status === 'rejected') {
+//         console.error('Cloudinary deletion failed:', result.reason);
+//       }
+//     });
+
+//     res.json({ message: 'Listing deleted' });
+//   } catch (err) {
+//     res.status(500).json({
+//       message: 'Failed to delete listing',
+//       error: err.message,
+//     });
+//   }
+// };
+
 export const deleteListing = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
-    if (!listing) return res.status(404).json({ message: 'Listing not found' });
-    if (listing.seller.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-      return res.status(403).json({ message: 'Only the listing owner can delete this listing' });
+
+    if (!listing) {
+      return res.status(404).json({
+        message: 'Listing not found',
+      });
     }
+
+    if (
+      listing.seller.toString() !== req.user._id.toString() &&
+      !req.user.isAdmin
+    ) {
+      return res.status(403).json({
+        message: 'Only the listing owner can delete this listing',
+      });
+    }
+
+    const publicIds = listing.imagePublicIds || [];
+
+    // Delete images from Cloudinary
+    const results = await Promise.allSettled(
+      publicIds.map((id) =>
+        cloudinary.uploader.destroy(id, {
+          invalidate: true,
+        })
+      )
+    );
+
+    const failed = results.filter(
+      (result) =>
+        result.status === 'rejected' ||
+        !['ok', 'not found'].includes(result.value?.result)
+    );
+
+    if (failed.length > 0) {
+      console.error('Some Cloudinary images could not be deleted:', failed);
+
+      return res.status(500).json({
+        message: 'Failed to delete some listing images. Listing was not deleted.',
+      });
+    }
+
     await listing.deleteOne();
-    res.json({ message: 'Listing deleted' });
+
+    res.json({
+      message: 'Listing and associated images deleted successfully',
+    });
+
   } catch (err) {
-    res.status(500).json({ message: 'Failed to delete listing', error: err.message });
+    console.error('Delete listing error:', err);
+
+    res.status(500).json({
+      message: 'Failed to delete listing',
+      error: err.message,
+    });
   }
 };
 

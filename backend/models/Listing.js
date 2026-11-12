@@ -28,6 +28,7 @@ const listingSchema = new mongoose.Schema(
     },
     brand: { type: String, default: '' },
     images: [{ type: String }],
+    imagePublicIds: [{ type: String }],
     meetupLocation: {
       type: String,
       required: true,

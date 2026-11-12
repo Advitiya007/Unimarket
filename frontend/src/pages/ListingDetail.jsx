@@ -135,9 +135,9 @@ export default function ListingDetail() {
                 <button onClick={share} className="badge-icon bg-campus-paper border border-campus-ink/10">
                   <FiShare2 size={16} />
                 </button>
-                <button className="badge-icon bg-campus-paper border border-campus-ink/10">
+                {/* <button className="badge-icon bg-campus-paper border border-campus-ink/10">
                   <FiFlag size={16} />
-                </button>
+                </button> */}
               </div>
             </div>
 
@@ -196,6 +196,8 @@ export default function ListingDetail() {
             {isOwner && listing.status === 'Available' && (
               <div className="mt-8">
                 <p className="eyebrow">Interested buyers ({listing.interestedBuyers?.length || 0})</p>
+                  <p className= "text-sm text-campus-ink/40"> You can select mutliple buyers , start conversation with them and choose the one who gives you the best price
+                 </p>
                 <div className="mt-3 space-y-3">
                   {(listing.interestedBuyers || []).length === 0 && (
                     <p className="text-sm text-campus-ink/40">No interest yet — check back soon.</p>

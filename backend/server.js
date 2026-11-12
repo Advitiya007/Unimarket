@@ -21,7 +21,7 @@ import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-console.log(`__dirname: ${__dirname}`);
+// console.log(`__dirname: ${__dirname}`);
 connectDB();
 
 const app = express();
