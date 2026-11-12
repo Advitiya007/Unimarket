@@ -25,6 +25,7 @@ const __dirname = path.dirname(__filename);
 connectDB();
 
 const app = express();
+app.set("trust proxy", 1);
 const server = http.createServer(app);
 app.use(cookieParser());
 const io = new Server(server, {
