@@ -66,6 +66,11 @@ socketHandler(io);
 // Run the expiry engine every hour, plus once at boot
 runExpiryEngine();
 setInterval(runExpiryEngine, 60 * 60 * 1000);
-
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'UniMarket API is running!'
+  });
+});
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`UniMarket API running on port ${PORT}`));
